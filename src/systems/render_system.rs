@@ -1,26 +1,55 @@
-use crate::components::texture::Texture;  // Import Texture directly
+use crate::components::texture::Texture;
 use crate::components::{Entity, Position, Animation, AnimationState};
-use sdl2::render::Canvas;
-use sdl2::video::Window;
-use std::time::Duration;
+use crate::systems::tilemap_system::TilemapRenderSystem;
+use crate::components::tilemap::Tilemap;
 
+
+// src/systems/render_system.rs
 pub struct RenderSystem;
 
 impl RenderSystem {
-    pub fn render(
-        canvas: &mut Canvas<Window>, 
-        entities: &[Entity], 
-        textures: &[Vec<Texture>],  // Change to accept Vec<Vec<Texture>>
-        animations: &[Animation], 
-        positions: &[Position]
+    pub fn render<'a>(
+        canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
+        entities: &[Entity],
+        textures: &[Vec<Texture<'a>>],
+        animations: &[Animation],
+        positions: &[Position],
+        camera_x: i32,
+        camera_y: i32,
+        tilemap: Option<&Tilemap<'a>>
     ) {
-        // Clear and prepare the canvas
+        // Clear the canvas
         canvas.set_draw_color(sdl2::pixels::Color::RGB(0, 0, 0));
         canvas.clear();
         
-        // Render each entity
+        // Render tilemap first (background)
+        if let Some(tilemap) = tilemap {
+            TilemapRenderSystem::render(canvas, tilemap, camera_x, camera_y);
+        }
+        
+        // Render entities on top
+        Self::render_entities(canvas, entities, textures, animations, positions, camera_x, camera_y);
+        
+        canvas.present();
+    }
+
+    fn render_entities<'a>(
+        canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
+        entities: &[Entity],
+        textures: &[Vec<Texture<'a>>],
+        animations: &[Animation],
+        positions: &[Position],
+        camera_x: i32,
+        camera_y: i32
+    ) {
         for (i, _) in entities.iter().enumerate() {
-            if let (Some(entity_textures), Some(animation), Some(position)) = (textures.get(i), animations.get(i), positions.get(i)) {
+            if let (Some(entity_textures), Some(animation), Some(position)) = 
+                (textures.get(i), animations.get(i), positions.get(i)) {
+                
+                // Calculate screen position (adjust for camera)
+                let screen_x = position.x as i32 - camera_x;
+                let screen_y = position.y as i32 - camera_y;
+                
                 // Get the right texture and frame based on animation state
                 let texture_index = match animation.state {
                     AnimationState::Idle => 0,    // Soldier-Idle.png is at index 0
@@ -56,8 +85,8 @@ impl RenderSystem {
                     
                     let scale_factor = 2.0;
                     let dest_rect = sdl2::rect::Rect::new(
-                        position.x as i32,
-                        position.y as i32,
+                        screen_x,
+                        screen_y,
                         (frame_width as f32 * scale_factor) as u32,
                         (frame_height as f32 * scale_factor) as u32
                     );
@@ -78,7 +107,5 @@ impl RenderSystem {
                 }
             }
         }
-        
-        canvas.present();
     }
 }

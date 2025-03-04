@@ -1,0 +1,50 @@
+// assets/entities.ron
+(
+  entities: {
+    "player": (
+      entity_type: "player",
+      health: 100,
+      speed: 2.0,
+      textures: {
+        "idle": "Characters(100x100)/Soldier/Soldier with shadows/Soldier-Idle.png",
+        "walk": "Characters(100x100)/Soldier/Soldier with shadows/Soldier-Walk.png",
+        "attack": "Characters(100x100)/Soldier/Soldier with shadows/Soldier-Attack01.png",
+      },
+      animation_frames: {
+        "idle": 6,
+        "walk": 8,
+        "attack": 4,
+      },
+      ai_type: None,
+      collision: (
+        width: 50.0,
+        height: 60.0,
+        offset_x: 75.0,  // Offset from left edge of sprite
+        offset_y: 120.0, // Offset from top edge of sprite
+      ),
+    ),
+    
+    "goblin": (
+      entity_type: "enemy",
+      health: 50,
+      speed: 1.5,
+      textures: {
+        "idle": "Characters(100x100)/Orc/Orc-Idle.png",
+        "walk": "Characters(100x100)/Orc/Orc-Walk.png",
+        "attack": "Characters(100x100)/Orc/Orc-Attack.png",
+      },
+      animation_frames: {
+        "idle": 6,
+        "walk": 8,
+        "attack": 6,
+      },
+      ai_type: Some("chase"),
+      collision: (
+        width: 40.0,
+        height: 50.0,
+        offset_x: 80.0,
+        offset_y: 130.0,
+      ),
+    ),
+  },
+)

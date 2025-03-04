@@ -1,3 +1,5 @@
+// src/components/position.rs
+#[derive(Clone, Copy)]
 pub struct Position {
     pub x: f32,
     pub y: f32,
@@ -5,7 +7,7 @@ pub struct Position {
 }
 
 impl Position {
-    pub fn new(x: f32, y: f32) -> Self {
-        Self { x, y, facing_right: true } // Default facing right
+    pub fn new(x: f32, y: f32, facing_right: bool) -> Self {
+        Self { x, y, facing_right }
     }
 }

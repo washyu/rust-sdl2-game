@@ -8,6 +8,7 @@ mod asset_manager;
 use sdl2::event::Event;
 use std::time::{Instant, Duration};
 use game_state::GameState;
+use sdl2::pixels::Color;
 
 fn main() -> Result<(), String> {
     // debug to see where the program is running.
@@ -32,6 +33,13 @@ fn main() -> Result<(), String> {
     // Create game state
     let mut game = GameState::new(&texture_creator);
     
+    // Add this right after creating the game state
+    let player_count = game.entities.len();
+    println!("Loaded {} entities", player_count);
+    if player_count > 0 {
+        println!("Player position: ({}, {})", game.positions[0].x, game.positions[0].y);
+    }
+    
     let mut last_frame_time = Instant::now();
 
     'running: loop {
@@ -54,11 +62,18 @@ fn main() -> Result<(), String> {
         // Update game state
         game.update(&keyboard_state, delta_time);
         
-        // Render
+        // Clear the screen
+        canvas.set_draw_color(Color::RGB(0, 0, 0));
+        canvas.clear();
+        
+        // Render the game
         game.render(&mut canvas);
         
+        // Present the frame
+        canvas.present();
+        
         // Cap frame rate
-        std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
     
     Ok(())

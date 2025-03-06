@@ -93,8 +93,8 @@ impl<'a> GameState<'a> {
         let mut asset_manager = AssetManager::new();
         let tilemap = match asset_manager.load_tilemap_with_tileset(
             texture_creator, 
-            "levels/level1.csv", 
-            "tilesets/Texture/TX Tileset Grass.png", 
+            "assets/levels/level1.csv", 
+            "assets/tilesets/Texture/TX Tileset Grass.png", 
             32, 
             32
         ) {

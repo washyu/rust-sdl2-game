@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
+
 pub struct AssetManager<'a> {
     textures: HashMap<String, Texture<'a>>,
 }
@@ -17,13 +18,24 @@ impl<'a> AssetManager<'a> {
         }
     }
     
-    pub fn load_texture(&mut self, creator: &'a TextureCreator<WindowContext>, path: &str) -> Result<&Texture<'a>, String> {
-        if !self.textures.contains_key(path) {
-            let texture = Texture::new(creator, path)?;
-            self.textures.insert(path.to_string(), texture);
+    pub fn load_texture(&mut self, creator: &'a TextureCreator<WindowContext>, path: &str) 
+        -> Result<Texture<'a>, String> 
+    {
+        // Check if we have already loaded this texture
+        if let Some(texture) = self.textures.get(path) {
+            // Here's the tricky part - we need to clone the texture somehow
+            // But SDL textures can't be cloned...
+            return Err("Texture system needs redesign - can't clone SDL textures".to_string());
         }
         
-        Ok(self.textures.get(path).unwrap())
+        // Load the texture
+        let full_path = if !path.starts_with("assets/") {
+            format!("assets/{}", path)
+        } else {
+            path.to_string()
+        };
+        
+        Texture::new(creator, &full_path)
     }
     
     pub fn load_tilemap(&mut self, 

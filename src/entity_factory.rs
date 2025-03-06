@@ -18,7 +18,7 @@ impl<'a> EntityFactory<'a> {
         texture_creator: &'a TextureCreator<WindowContext>
     ) -> Result<Self, String> {
         // Load entity definitions from RON file
-        let ron_str = std::fs::read_to_string("entities.ron")
+        let ron_str = std::fs::read_to_string("assets/entities.ron")
             .map_err(|e| format!("Failed to read entity definitions: {}", e))?;
             
         let definitions: EntityDefinitions = ron::from_str(&ron_str)

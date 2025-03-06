@@ -6,9 +6,9 @@
       health: 100,
       speed: 2.0,
       textures: {
-        "idle": "Characters(100x100)/Soldier/Soldier with shadows/Soldier-Idle.png",
-        "walk": "Characters(100x100)/Soldier/Soldier with shadows/Soldier-Walk.png",
-        "attack": "Characters(100x100)/Soldier/Soldier with shadows/Soldier-Attack01.png",
+        "idle": "assets/Characters(100x100)/Soldier/Soldier with shadows/Soldier-Idle.png",
+        "walk": "assets/Characters(100x100)/Soldier/Soldier with shadows/Soldier-Walk.png",
+        "attack": "assets/Characters(100x100)/Soldier/Soldier with shadows/Soldier-Attack01.png",
       },
       animation_frames: {
         "idle": 6,
@@ -29,9 +29,9 @@
       health: 50,
       speed: 1.5,
       textures: {
-        "idle": "Characters(100x100)/Orc/Orc-Idle.png",
-        "walk": "Characters(100x100)/Orc/Orc-Walk.png",
-        "attack": "Characters(100x100)/Orc/Orc-Attack.png",
+        "idle": "assets/Characters(100x100)/Orc/Orc-Idle.png",
+        "walk": "assets/Characters(100x100)/Orc/Orc-Walk.png",
+        "attack": "assets/Characters(100x100)/Orc/Orc-Attack.png",
       },
       animation_frames: {
         "idle": 6,

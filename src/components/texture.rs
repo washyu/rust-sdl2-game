@@ -3,6 +3,7 @@ use sdl2::video::WindowContext;
 use sdl2::surface::Surface;
 
 pub struct Texture<'a> {
+    pub path: String,
     pub handle: sdl2::render::Texture<'a>,
 }
 
@@ -17,7 +18,7 @@ impl<'a> Texture<'a> {
         let texture = texture_creator.create_texture_from_surface(&surface)
             .map_err(|e| e.to_string())?;
         
-        Ok(Texture { handle: texture })
+        Ok(Texture { handle: texture, path: path.to_string() })
     }
 
     // src/components/texture.rs - Fix the load method
@@ -29,6 +30,6 @@ impl<'a> Texture<'a> {
         let texture = texture_creator.create_texture_from_surface(&surface)
             .map_err(|e| e.to_string())?;
         
-        Ok(Texture { handle: texture })
+        Ok(Texture { handle: texture, path: path.to_string() })
     }
 }

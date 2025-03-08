@@ -14,6 +14,10 @@ impl InputSystem {
     pub fn run(&mut self, entities: &[Entity], input_bindings: &[InputBindings], keyboard: &sdl2::keyboard::KeyboardState) -> Vec<ActionState> {
         let mut action_states = vec![ActionState::None; entities.len()];
         
+        // Add debug output to see what's happening
+        println!("Input system running, keyboard state detected: {}", 
+                 if keyboard.is_scancode_pressed(sdl2::keyboard::Scancode::Right) { "right pressed" } else { "right not pressed" });
+        
         for (i, _) in entities.iter().enumerate() {
             if let Some(bindings) = input_bindings.get(i) {
                 let mut right = false;
@@ -22,31 +26,23 @@ impl InputSystem {
                 let mut down = false;
                 let mut attack = false;
                 
-                // Check each binding
-                for (j, (&scancode, &action)) in bindings.keys.iter().enumerate() {
-                    let key_pressed = keyboard.is_scancode_pressed(scancode);
-                    let key_just_pressed = key_pressed && !self.previous_keys.get(j).copied().unwrap_or(false);
-                    
-                    // Update previous key state
-                    if let Some(prev) = self.previous_keys.get_mut(j) {
-                        *prev = key_pressed;
-                    } else {
-                        self.previous_keys.push(key_pressed);
+                // Check each key binding - CHANGE THIS PART
+                for (scancode, action) in &bindings.keys { // Use keys not bindings
+                    if keyboard.is_scancode_pressed(*scancode) {
+                        match action {
+                            GameAction::MoveRight => right = true,
+                            GameAction::MoveLeft => left = true,
+                            GameAction::MoveUp => up = true,
+                            GameAction::MoveDown => down = true,
+                            GameAction::Attack => attack = true,
+                        }
                     }
-                    
-                    match action {
-                        GameAction::MoveRight => right = key_pressed,
-                        GameAction::MoveLeft => left = key_pressed,
-                        GameAction::MoveUp => up = key_pressed,
-                        GameAction::MoveDown => down = key_pressed,
-                        GameAction::Attack => {
-                            // Only set attack on key press, not key hold
-                            if key_just_pressed {
-                                attack = true;
-                                println!("Attack key JUST pressed");
-                            }
-                        },
-                    }
+                }
+                
+                // Debug output for player entity
+                if i == 0 {
+                    println!("Player input: right={}, left={}, up={}, down={}, attack={}", 
+                             right, left, up, down, attack);
                 }
                 
                 // Set appropriate action state

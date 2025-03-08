@@ -102,7 +102,7 @@ impl<'a> AssetManager<'a> {
     
     pub fn load_tileset(&self, texture_creator: &'a TextureCreator<WindowContext>, path: &str, tile_width: u32, tile_height: u32) -> Result<Tileset<'a>, String> {
         let texture = Texture::new(texture_creator, path)?;
-        Ok(Tileset::new(texture, tile_width, tile_height))
+        Ok(Tileset::new(std::sync::Arc::new(texture), tile_width, tile_height))
     }
     
     pub fn load_tilemap_with_tileset(&mut self, 

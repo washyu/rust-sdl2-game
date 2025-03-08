@@ -1,6 +1,8 @@
-use crate::components::Tilemap;
+// Add these imports at the top
+use crate::components::tilemap::{Tilemap, TileId, Tileset};
 use sdl2::render::Canvas;
 use sdl2::video::Window;
+
 
 pub struct TilemapRenderSystem;
 
@@ -37,6 +39,7 @@ impl TilemapRenderSystem {
                                 tilemap.tile_size
                             );
                             
+                            // Update this line to use the Arc<Texture>
                             canvas.copy(&tileset.texture.handle, Some(src_rect), Some(dest_rect))
                                 .unwrap_or_else(|e| {
                                     eprintln!("Error rendering tile at ({}, {}): {}", x, y, e);

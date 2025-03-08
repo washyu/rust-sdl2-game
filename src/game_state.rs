@@ -5,25 +5,27 @@ use crate::systems::ai_system::AiSystem;
 use crate::systems::health_system::HealthSystem;
 use crate::systems::render_system::RenderSystem;
 use crate::systems::*;
-use crate::asset_manager::AssetManager;
+use crate::resource_manager::ResourceManager;
 use sdl2::render::TextureCreator;
 use sdl2::video::WindowContext;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 pub struct GameState<'a> {
     pub entities: Vec<Entity>,
     pub positions: Vec<Position>,
     pub healths: Vec<Health>,
     pub input_bindings: Vec<InputBindings>,
-    pub textures: Vec<Vec<Texture<'a>>>,
+    pub textures: Vec<Vec<Arc<Texture<'a>>>>, // Changed to Arc<Texture>
     pub animations: Vec<Animation>,
     pub ais: Vec<Ai>,
     pub action_states: Vec<ActionState>,
-    pub tilemap: Option<Tilemap<'a>>,
+    pub tilemap: Option<Arc<Tilemap<'a>>>, // Changed to Arc<Tilemap>
     pub tile_types: HashMap<TileId, TileType>,
     pub camera_x: i32,
     pub camera_y: i32,
     input_system: InputSystem,  // Keep the InputSystem instance
+    resource_manager: ResourceManager<'a>, // Added ResourceManager
 }
 
 impl<'a> GameState<'a> {
@@ -51,7 +53,7 @@ impl<'a> GameState<'a> {
                 entities.push(entity);
                 positions.push(position);
                 healths.push(health);
-                textures.push(entity_textures);
+                textures.push(entity_textures.into_iter().collect()); // Wrap textures in Arc
                 animations.push(animation);
                 input_bindings.push(binding);
                 ais.push(ai);
@@ -66,7 +68,7 @@ impl<'a> GameState<'a> {
                 entities.push(entity);
                 positions.push(position);
                 healths.push(health);
-                textures.push(entity_textures);
+                textures.push(entity_textures.into_iter().collect()); // Wrap textures in Arc
                 animations.push(animation);
                 input_bindings.push(binding);
                 ais.push(ai);
@@ -89,9 +91,11 @@ impl<'a> GameState<'a> {
             println!("WARNING: Tilesets directory doesn't exist at {:?}", tilesets_dir.to_path_buf());
         }   
 
+        // Create resource manager
+        let mut resource_manager = ResourceManager::new();
+        
         // Load tilemap with tileset
-        let mut asset_manager = AssetManager::new();
-        let tilemap = match asset_manager.load_tilemap_with_tileset(
+        let tilemap = match resource_manager.get_tilemap(
             texture_creator, 
             "assets/levels/level1.csv", 
             "assets/tilesets/Texture/TX Tileset Grass.png", 
@@ -122,6 +126,7 @@ impl<'a> GameState<'a> {
             camera_x: 0,
             camera_y: 0,
             input_system,
+            resource_manager,
         }
     }
     
@@ -154,7 +159,7 @@ impl<'a> GameState<'a> {
             &self.entities[0..1],  // Just player
             &mut self.positions[0..1], 
             &self.action_states[0..1],
-            self.tilemap.as_ref(), 
+            self.tilemap.as_deref(), // Use as_deref() to get &Tilemap from Option<Arc<Tilemap>>
             Some(&self.tile_types)
         );
         
@@ -171,7 +176,7 @@ impl<'a> GameState<'a> {
             &self.entities[1..], 
             &mut self.positions[1..], 
             &self.action_states[1..],
-            self.tilemap.as_ref(), 
+            self.tilemap.as_deref(), // Use as_deref() to get &Tilemap from Option<Arc<Tilemap>>
             Some(&self.tile_types)
         );
         
@@ -262,7 +267,7 @@ impl<'a> GameState<'a> {
             &self.positions,
             self.camera_x,
             self.camera_y,
-            self.tilemap.as_ref()
+            self.tilemap.as_deref() // Use as_deref() to get &Tilemap from Option<Arc<Tilemap>>
         );
     }
 }

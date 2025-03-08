@@ -1,14 +1,16 @@
 use crate::components::ai::Ai;
 use crate::entity_definitions::EntityDefinitions;
 use crate::components::*;
-use crate::asset_manager::AssetManager;
+use crate::resource_manager::ResourceManager;
 use sdl2::render::TextureCreator;
 use sdl2::video::WindowContext;
+use sdl2::keyboard::Scancode;
+use std::sync::Arc;
 
 
 pub struct EntityFactory<'a> {
     definitions: EntityDefinitions,
-    asset_manager: AssetManager<'a>,
+    resource_manager: ResourceManager<'a>,
     texture_creator: &'a TextureCreator<WindowContext>,
     next_entity_id: u32,
 }
@@ -26,7 +28,7 @@ impl<'a> EntityFactory<'a> {
             
         Ok(EntityFactory {
             definitions,
-            asset_manager: AssetManager::new(),
+            resource_manager: ResourceManager::new(),
             texture_creator,
             next_entity_id: 0,
         })
@@ -38,42 +40,43 @@ impl<'a> EntityFactory<'a> {
         id
     }
     
-    pub fn create_entity(
-        &mut self, 
+    pub fn create_entity(&mut self, 
         entity_name: &str, 
         x: f32, 
         y: f32
-    ) -> Result<(Entity, Position, Health, Vec<Texture<'a>>, Animation, InputBindings, Ai, ActionState), String> {
+    ) -> Result<(Entity, Position, Health, Vec<Arc<Texture<'a>>>, Animation, InputBindings, Ai, ActionState), String> {
+        // Get entity definition
+        let definition = self.definitions.entities.get(entity_name)
+            .ok_or_else(|| format!("Entity definition not found: {}", entity_name))?.clone();
+        
         // Create entity with ID
         let entity_id = self.next_id();
         let entity = Entity(entity_id as usize);
-
-        let definition = self.definitions.entities.get(entity_name)
-            .ok_or_else(|| format!("Entity definition not found: {}", entity_name))?;
         
-        // Create components
-        let position = Position { x, y, facing_right: true };
-        let health = Health::new(definition.health, definition.health);
+        // Create position
+        let position = Position::new(x, y, true); // Assuming the entity is facing right by default
         
-        // Load textures based on definition
-        let mut textures = Vec::new();
-        let texture_types = ["idle", "walk", "attack"];
+        // Create health
+        let health = Health::new(definition.health, definition.max_health);
+        
+        // Load textures for all animation types
+        let texture_types = vec!["idle", "walk", "attack"];
+        let mut entity_textures = Vec::new();
         
         for &anim_type in &texture_types {
             if let Some(texture_path) = definition.textures.get(anim_type) {
-                match Texture::new(self.texture_creator, texture_path) {
-                    Ok(texture) => textures.push(texture),
+                match self.resource_manager.get_texture(self.texture_creator, texture_path) {
+                    Ok(texture) => entity_textures.push(texture),
                     Err(e) => eprintln!("Failed to load texture {}: {}", texture_path, e),
                 }
             }
         }
         
-        // Get animation frame counts from definition
+        // Create animation
         let idle_frames = definition.animation_frames.get("idle").copied().unwrap_or(1);
         let walk_frames = definition.animation_frames.get("walk").copied().unwrap_or(1);
         let attack_frames = definition.animation_frames.get("attack").copied().unwrap_or(1);
 
-        // Create animation with frames from definition
         let animation = Animation::new(
             AnimationState::Idle, 
             idle_frames,
@@ -81,30 +84,36 @@ impl<'a> EntityFactory<'a> {
             attack_frames
         );
         
-        // Create input bindings (only for player)
+        // Create input bindings
         let input_bindings = if entity_name == "player" {
             InputBindings::new(vec![
-                (sdl2::keyboard::Scancode::W, GameAction::MoveUp),
-                (sdl2::keyboard::Scancode::A, GameAction::MoveLeft),
-                (sdl2::keyboard::Scancode::S, GameAction::MoveDown),
-                (sdl2::keyboard::Scancode::D, GameAction::MoveRight),
-                (sdl2::keyboard::Scancode::Space, GameAction::Attack),
+                // Arrow keys
+                (Scancode::Right, GameAction::MoveRight),
+                (Scancode::Left, GameAction::MoveLeft),
+                (Scancode::Up, GameAction::MoveUp),
+                (Scancode::Down, GameAction::MoveDown),
+                // WASD keys - add these
+                (Scancode::D, GameAction::MoveRight),
+                (Scancode::A, GameAction::MoveLeft),
+                (Scancode::W, GameAction::MoveUp),
+                (Scancode::S, GameAction::MoveDown),
+                // Attack key
+                (Scancode::Space, GameAction::Attack),
             ])
         } else {
             InputBindings::default()
         };
         
-        // Add AI component based on entity type
+        // Create AI
         let ai = match definition.ai_type.as_deref() {
             Some("patrol") => Ai { behavior: AiState::Patrol { current_waypoint: 0, waypoints: vec![] }},
             Some("chase") => Ai { behavior: AiState::Chase { target_entity: 0, detection_range: 200.0, attack_range: 50.0 }},
-            _ => Ai { behavior: AiState::Idle },
+            _ => Ai { behavior: AiState::Idle }, // Changed 'mode' to 'behavior'
         };
         
-        // Initial action state
+        // Create action state
         let action_state = ActionState::None;
         
-        // Return entity and components
-        Ok((entity, position, health, textures, animation, input_bindings, ai, action_state))
+        Ok((entity, position, health, entity_textures, animation, input_bindings, ai, action_state))
     }
 }

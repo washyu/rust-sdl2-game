@@ -4,8 +4,9 @@ mod game_state;
 mod entity_factory;
 mod entity_definitions;
 mod asset_manager;
+mod resource_manager;
 
-use sdl2::event::Event;
+use sdl2::{event::Event, keyboard::Scancode};
 use std::time::{Instant, Duration};
 use game_state::GameState;
 use sdl2::pixels::Color;
@@ -48,16 +49,42 @@ fn main() -> Result<(), String> {
         let delta_time = current_time.duration_since(last_frame_time).as_secs_f32();
         last_frame_time = current_time;
 
-        // Handle events
+        // Process events
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. } => break 'running,
+                Event::Quit {..} => break 'running,
                 _ => {}
             }
         }
-        
+
         // Get keyboard state
         let keyboard_state = event_pump.keyboard_state();
+
+        // Debug output to check if SDL2 is detecting ANY keys at all
+        if keyboard_state.is_scancode_pressed(Scancode::Right) ||
+            keyboard_state.is_scancode_pressed(Scancode::Left) ||
+            keyboard_state.is_scancode_pressed(Scancode::Up) ||
+            keyboard_state.is_scancode_pressed(Scancode::Down) ||
+            keyboard_state.is_scancode_pressed(Scancode::Space) {
+            println!("SDL2 DETECTED KEY PRESS: Right={}, Left={}, Up={}, Down={}, Space={}",
+            keyboard_state.is_scancode_pressed(Scancode::Right),
+            keyboard_state.is_scancode_pressed(Scancode::Left),
+            keyboard_state.is_scancode_pressed(Scancode::Up),
+            keyboard_state.is_scancode_pressed(Scancode::Down),
+            keyboard_state.is_scancode_pressed(Scancode::Space));
+        }
+        
+        // ADD NEW DEBUG CODE HERE
+        if keyboard_state.is_scancode_pressed(Scancode::W) ||
+           keyboard_state.is_scancode_pressed(Scancode::A) ||
+           keyboard_state.is_scancode_pressed(Scancode::S) ||
+           keyboard_state.is_scancode_pressed(Scancode::D) {
+            println!("SDL2 DETECTED WASD: W={}, A={}, S={}, D={}",
+                keyboard_state.is_scancode_pressed(Scancode::W),
+                keyboard_state.is_scancode_pressed(Scancode::A),
+                keyboard_state.is_scancode_pressed(Scancode::S),
+                keyboard_state.is_scancode_pressed(Scancode::D));
+        }
         
         // Update game state
         game.update(&keyboard_state, delta_time);

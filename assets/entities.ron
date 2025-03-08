@@ -4,6 +4,7 @@
     "player": (
       entity_type: "player",
       health: 100,
+      max_health: 100,
       speed: 2.0,
       textures: {
         "idle": "assets/Characters(100x100)/Soldier/Soldier with shadows/Soldier-Idle.png",
@@ -27,6 +28,7 @@
     "goblin": (
       entity_type: "enemy",
       health: 50,
+      max_health: 50,
       speed: 1.5,
       textures: {
         "idle": "assets/Characters(100x100)/Orc/Orc-Idle.png",

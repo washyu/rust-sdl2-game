@@ -2,6 +2,7 @@ use crate::components::texture::Texture;
 use crate::components::{Entity, Position, Animation, AnimationState};
 use crate::systems::tilemap_system::TilemapRenderSystem;
 use crate::components::tilemap::Tilemap;
+use std::sync::Arc;
 
 
 // src/systems/render_system.rs
@@ -11,7 +12,7 @@ impl RenderSystem {
     pub fn render<'a>(
         canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
         entities: &[Entity],
-        textures: &[Vec<Texture<'a>>],
+        textures: &[Vec<Arc<Texture<'a>>>], // Changed to Arc<Texture>
         animations: &[Animation],
         positions: &[Position],
         camera_x: i32,
@@ -36,7 +37,7 @@ impl RenderSystem {
     fn render_entities<'a>(
         canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
         entities: &[Entity],
-        textures: &[Vec<Texture<'a>>],
+        textures: &[Vec<Arc<Texture<'a>>>], // Changed to Arc<Texture>
         animations: &[Animation],
         positions: &[Position],
         camera_x: i32,
@@ -94,9 +95,12 @@ impl RenderSystem {
                     // Replace the canvas.copy call with copy_ex for flip support
                     let flip_horizontal = !position.facing_right;
 
+                    // Access texture handle through Arc
+                    let texture_handle = &texture.handle;
+
                     // Use copy_ex instead of copy to support flipping
                     canvas.copy_ex(
-                        &texture.handle, 
+                        texture_handle, 
                         Some(clip_rect), 
                         Some(dest_rect),
                         0.0,             // Rotation angle (0 = no rotation)

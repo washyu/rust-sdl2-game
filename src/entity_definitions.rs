@@ -7,6 +7,7 @@ use std::collections::HashMap;
 pub struct EntityDefinition {
     pub entity_type: String,
     pub health: u32,
+    pub max_health: u32,
     pub speed: f32,
     pub textures: HashMap<String, String>,
     pub animation_frames: HashMap<String, usize>,
